@@ -1,5 +1,8 @@
+import argparse
+
+
 def main():
-    print("Hello from object-tracking!")
+    argparser = argparse.argumentParser( prog='Object')
 
 
 if __name__ == "__main__":
