@@ -1,4 +1,5 @@
 import argparse
+from utils import camera_type
 
 
 def main():
@@ -6,7 +7,7 @@ def main():
     argparser.add_argument('--camera', default=0,
                            type=camera_type, help="Specifies the camera source")
     argparser.add_argument(
-        '--color', default=["red"], nargs='+', help="Specifies the color(s) to be detected")
+        '--color', default=["red"], nargs='+', choices=['red', 'green', 'blue', 'yellow'], help="Specifies the color(s) to be detected")
     args = argparser.parse_args()
     cam_src = args.camera
     color = set(args.color)  # convert the input into set to avoid duplication
