@@ -1,4 +1,5 @@
 import logging
+import select
 from typing import Sequence
 import cv2 as cv
 from config import COLOR_RANGES
@@ -44,17 +45,27 @@ def detect_object(cam_src: str | int, color: set, n: int) -> None:
     cap = cv.VideoCapture(cam_src)
     if not cap.isOpened():
         raise RuntimeError("Failed to open the camera source")
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            logging.warning("Failed to read the frame from the stream")
-            continue
-        hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-        mask = create_mask(hsv_frame, color)
-        if mask is None:
-            logging.warning("Failed to create mask")
-            continue
-        contours = get_contours(mask)
-        if contours:
-            selected_contours = sorted(
-                contours, key=cv.contourArea, reverse=True)[:]
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                logging.warning("Failed to read the frame from the stream")
+                continue
+            hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+            mask = create_mask(hsv_frame, color)
+            if mask is None:
+                logging.warning("Failed to create mask")
+                continue
+            contours = get_contours(mask)
+            if contours:
+                selected_contours = sorted(
+                    contours, key=cv.contourArea, reverse=True)[:min(n, len(contours))]
+                for con in selected_contours:
+                    x, y, w, h = cv.boundingRect(con)
+                    cv.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            cv.imshow('Detecting Object', frame)
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
+    finally:
+        cap.release()
+        cv.destroyAllWindows()
