@@ -1,6 +1,5 @@
+from typing import Sequence, List
 import logging
-import select
-from typing import Sequence
 import cv2 as cv
 from config import COLOR_RANGES
 from cv2.typing import MatLike, Rect
@@ -33,7 +32,7 @@ def create_mask(frame: MatLike, color: set) -> MatLike | None:
     return mask
 
 
-def get_contours(mask: MatLike) -> Sequence[MatLike]:
+def get_contours(mask: MatLike) -> MatLike:
     kernal = np.ones((5, 5), np.uint8)
     morphed_mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernal)
     contours, _ = cv.findContours(
@@ -41,12 +40,29 @@ def get_contours(mask: MatLike) -> Sequence[MatLike]:
     return contours
 
 
-def track_object(frame: MatLike, cor: Rect) -> None:
+def get_contour_cordinates(contours: MatLike, n: int) -> List[tuple]:
+    coordinates = []
+    selected_contours = sorted(
+        contours, key=cv.contourArea, reverse=True)[:min(n, len(contours))]
+    for con in selected_contours:
+        cord = cv.boundingRect(con)
+        coordinates.append(cord)
+    return coordinates
+
+
+def predict_position(frame: MatLike, coordinates: List[tuple]) -> None:
+    pass
+
+
+def detect_position(frame: MatLike, contours: MatLike, n: int) -> None:
+    coordinates = get_contour_cordinates(contours, n)
+    for cord in coordinates:
+        x, y, w, h = cord
+        cv.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
 
 def init_kalman() -> None:
     kf = cv.KalmanFilter(4, 2)
-    # transition matrix
     kf.transitionMatrix = np.array([
         [1, 0, 1, 0],
         [0, 1, 0, 1],
@@ -66,7 +82,7 @@ def detect_object(cam_src: str | int, color: set, n: int) -> None:
     if not cap.isOpened():
         raise RuntimeError("Failed to open the camera source")
     try:
-        init_kalman()
+        # init_kalman()
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -79,12 +95,8 @@ def detect_object(cam_src: str | int, color: set, n: int) -> None:
                 continue
             contours = get_contours(mask)
             if contours:
-                selected_contours = sorted(
-                    contours, key=cv.contourArea, reverse=True)[:min(n, len(contours))]
-                for con in selected_contours:
-                    cordinates = cv.boundingRect(con)
-                    # function to track and detect objects
-                    track_object(frame, cordinates)
+                detect_position(frame, contours, n)
+            cv.imshow("Object Detection", frame)    
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
     finally:
