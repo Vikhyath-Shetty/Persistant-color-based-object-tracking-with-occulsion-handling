@@ -3,7 +3,7 @@ import select
 from typing import Sequence
 import cv2 as cv
 from config import COLOR_RANGES
-from cv2.typing import MatLike
+from cv2.typing import MatLike, Rect
 import numpy as np
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(message)s")
@@ -41,11 +41,32 @@ def get_contours(mask: MatLike) -> Sequence[MatLike]:
     return contours
 
 
+def track_object(frame: MatLike, cor: Rect) -> None:
+
+
+def init_kalman() -> None:
+    kf = cv.KalmanFilter(4, 2)
+    # transition matrix
+    kf.transitionMatrix = np.array([
+        [1, 0, 1, 0],
+        [0, 1, 0, 1],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+    ])
+    kf.measurementMatrix = np.array([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0]
+    ])
+    kf.processNoiseCov = np.eye(4)*0.01
+    kf.measurementNoiseCov = np.eye(2)*0.01
+
+
 def detect_object(cam_src: str | int, color: set, n: int) -> None:
     cap = cv.VideoCapture(cam_src)
     if not cap.isOpened():
         raise RuntimeError("Failed to open the camera source")
     try:
+        init_kalman()
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -61,9 +82,9 @@ def detect_object(cam_src: str | int, color: set, n: int) -> None:
                 selected_contours = sorted(
                     contours, key=cv.contourArea, reverse=True)[:min(n, len(contours))]
                 for con in selected_contours:
-                    x, y, w, h = cv.boundingRect(con)
-                    cv.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-            cv.imshow('Detecting Object', frame)
+                    cordinates = cv.boundingRect(con)
+                    # function to track and detect objects
+                    track_object(frame, cordinates)
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
     finally:

@@ -1,6 +1,6 @@
 import argparse
 from utils import camera_type
-from tracking import detect_object
+from detection import detect_object
 
 
 def main():
