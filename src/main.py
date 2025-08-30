@@ -1,7 +1,10 @@
 import argparse
-from utils import camera_type
-from detection import detect_object
+import logging
+from type import camera_type
+from tracker import *
 
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s [%(levelname)s] %(message)s")
 
 def main():
     argparser = argparse.ArgumentParser(prog='Color based object tracking')
@@ -18,7 +21,8 @@ def main():
     try:
         print("Running color based object tracking task...\n"
               "Press 'q' to exit")
-        detect_object(cam_src, color, n)
+        tracker = ObjectTracker(cam_src,color,n)
+        tracker.run()
     except RuntimeError as e:
         print(f"[ERROR]RuntimeError: {e}")
     except ValueError as e:
