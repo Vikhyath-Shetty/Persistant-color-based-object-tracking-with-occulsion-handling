@@ -1,5 +1,7 @@
+from ast import List
 import cv2 as cv
 import logging
+from tracker.detected_object import DetectedObject
 from utils import *
 
 
@@ -11,7 +13,7 @@ class ObjectTracker:
         self.cap = cv.VideoCapture(stream_src)
         if not self.cap.isOpened():
             raise RuntimeError("Failed to open the stream source")
-        self.tracked_objects = []
+        self.tracked_objects:list = []
 
     def run(self) -> None:
         logging.info("Running Object tracker")
@@ -22,10 +24,8 @@ class ObjectTracker:
                 continue
             hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             mask = get_mask(hsv_frame, self.color)
-            objects = get_n_objects(mask, self.n)
-            for x,y,w,h in objects:
-                cv.rectangle(frame,(x,y),(x+w,y+h),(0,255,255),2)
-                print((x,y,w,h))
-            cv.imshow('Frame',frame)
-            if cv.waitKey(1) & 0xFF == ord('q'):
-                break    
+            coordinates = get_n_coordinates(mask, self.n)
+            # print(coordinates)
+            for cor in coordinates:
+                DetectedObject(frame, mask, cor)
+              

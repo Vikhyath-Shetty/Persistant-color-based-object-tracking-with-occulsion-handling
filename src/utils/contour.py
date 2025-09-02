@@ -10,7 +10,7 @@ def get_n_contours(mask: MatLike, n: int) -> Sequence[MatLike]:
     return sorted_contours
 
 
-def get_n_objects(mask: MatLike, n: int) -> List[Tuple[int,int,int,int]]:
+def get_n_coordinates(mask: MatLike, n: int) -> List[Tuple[int,int,int,int]]:
     coordinates = []
     contours = get_n_contours(mask,n)
     for con in contours:

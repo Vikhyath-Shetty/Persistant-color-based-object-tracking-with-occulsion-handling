@@ -1,0 +1,3 @@
+class KalmanFilter:
+    def __init__(self, initial_state: tuple) -> None:
+        ...
