@@ -3,6 +3,7 @@ import cv2 as cv
 import logging
 from tracker.detected_object import DetectedObject
 from utils import *
+from utils.contour import get_n_contours
 
 
 class ObjectTracker:
@@ -24,8 +25,14 @@ class ObjectTracker:
                 continue
             hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             mask = get_mask(hsv_frame, self.color)
-            coordinates = get_n_coordinates(mask, self.n)
-            # print(coordinates)
-            for cor in coordinates:
-                DetectedObject(frame, mask, cor)
-              
+            contours = get_n_contours(mask.copy(),self.n)
+            if len(contours)>0:
+                for con in contours:
+                    obj = DetectedObject(frame, con)
+            else:
+                continue
+            cv.imshow('object',obj.histogram)
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                cv.destroyAllWindows()
+                break
+            
