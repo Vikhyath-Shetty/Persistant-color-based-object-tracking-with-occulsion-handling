@@ -17,8 +17,6 @@ class KalmanFilter:
 
         self.kf.measurementNoiseCov = np.eye(2, dtype=np.float32) * 0.5
 
-    def run(self) -> cv.KalmanFilter:
-        return self.kf
 
     def predict(self) -> tuple:
         prediction = self.kf.predict()
