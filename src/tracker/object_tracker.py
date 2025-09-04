@@ -29,10 +29,6 @@ class ObjectTracker:
             if len(contours)>0:
                 for con in contours:
                     obj = DetectedObject(frame, con)
-            else:
-                continue
-            cv.imshow('object',obj.histogram)
-            if cv.waitKey(1) & 0xFF == ord('q'):
-                cv.destroyAllWindows()
-                break
+                    print(obj.kf)
+            
             
