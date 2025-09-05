@@ -1,7 +1,7 @@
 import argparse
 import logging
 from type import camera_type
-from tracker import *
+from tracker import ObjectTracker
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(message)s")
